@@ -4,7 +4,6 @@
 #include "map.h"
 #include "consumer.h"
 #include "grenade.h"
-#include "crocodile.h"
 
 
 void *frog_thread(void *arg) {
@@ -125,21 +124,6 @@ void *frog_thread(void *arg) {
                     break;
 
             }
-            pthread_mutex_lock(&crocs_mutex);
-            int stream_id = get_stream_from_y(frog.y);
-            bool on_croc = is_on_crocodile(&frog, active_crocs, num_active_crocs);
-            pthread_mutex_unlock(&crocs_mutex);
-
-            if (stream_id != -1 && !on_croc) {
-                // La rana è nel fiume ma non su un coccodrillo, quindi è in acqua
-                // Invia un messaggio al consumer per perdere una vita e resettare il round
-                frog.x = (MAP_WIDTH - frog.width) / 2;
-                frog.y = MAP_HEIGHT - frog.height - 1;
-                msg.type = MSG_FROG_UPDATE;
-                msg.entity = frog;
-                buffer_push(buffer, msg);
-            }
-            
             if(old_x != frog.x || old_y != frog.y){
                 msg.type = MSG_FROG_UPDATE;
                 msg.entity = frog;

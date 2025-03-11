@@ -12,7 +12,6 @@ void init_bckmap(){
     init_pair(3,COLOR_BLACK,COLOR_BLUE);//ACQUA
     init_pair(4,COLOR_BLACK,COLOR_YELLOW);//TANA LIBERA
     init_pair(5,COLOR_BLACK,COLOR_RED);//TANA OCCUPATA
-    init_pair(6, COLOR_GREEN, COLOR_BLUE); // Colore per i coccodrilli
 
     //associo alla matrice map il valore del color pair apposito
     for(int y = 0; y < MAP_HEIGHT;y++){

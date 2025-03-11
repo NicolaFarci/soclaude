@@ -21,10 +21,20 @@ void *consumer_thread(void *arg) {
     CircularBuffer *buffer = args->buffer;
     WINDOW *game_win = args->game_win;
     WINDOW *info_win = args->info_win;
+
     Entity frog;
     frog_init(&frog);
     Entity grenade_left, grenade_right;
 
+    RiverLane lanes[NUM_RIVER_LANES];
+    init_lanes(lanes);
+    
+    Entity crocodiles[NUM_RIVER_LANES];
+    for (int i = 0; i < NUM_RIVER_LANES; i++)
+    {
+        crocodile_init(&crocodiles[i],&lanes[i]);
+    }
+    
     Message msg;
     
     int lives = NUM_LIVES;
@@ -87,45 +97,17 @@ void *consumer_thread(void *arg) {
                 grenade_right = msg.entity;
                 draw_grenade(game_win,&grenade_right);
                 break;
-            case MSG_CROCODILE:
-                // Controlla se la rana è sul coccodrillo
-                pthread_mutex_lock(&crocs_mutex);
-                bool was_on_croc = is_on_crocodile(&frog, active_crocs, num_active_crocs);
-                pthread_mutex_unlock(&crocs_mutex);
-                
-                // Pulisci il vecchio coccodrillo
-                clear_crocodile(game_win, &msg.entity);
-                
-                // Aggiorna la posizione del coccodrillo nell'array
-                pthread_mutex_lock(&crocs_mutex);
-                for (int i = 0; i < num_active_crocs; i++) {
-                    if (active_crocs[i].entity.y == msg.entity.y && 
-                        (active_crocs[i].entity.x == msg.entity.x - msg.entity.dx)) {
-                        active_crocs[i].entity = msg.entity;
+            case MSG_CROC_UPDATE:
+                for (int i = 0; i < NUM_RIVER_LANES; i++){
+                    if(msg.entity.y==lanes[i].y){
+                        clear_crocodile(game_win, &crocodiles[i]);
+                        crocodiles[i]= msg.entity;
+                        draw_crocodile(game_win, &crocodiles[i]);
                         break;
                     }
                 }
-                
-                // Se la rana era su questo coccodrillo, muovila con esso
-                if (was_on_croc && is_on_crocodile(&frog, active_crocs, num_active_crocs)) {
-                    frog.x += msg.entity.dx;
-                    // Se la rana esce dallo schermo, ha perso una vita
-                    if (frog.x < 1 || frog.x + frog.width > MAP_WIDTH - 1) {
-                        lives--;
-                        clear_frog(game_win, &frog);
-                        time = ROUND_TIME;
-                        reset_round();
-                    } else {
-                        // Aggiorna la posizione della rana
-                        clear_frog(game_win, &frog);
-                        draw_frog(game_win, &frog);
-                    }
-                }
-                pthread_mutex_unlock(&crocs_mutex);
-                
-                // Disegna il nuovo coccodrillo
-                draw_crocodile(game_win, &msg.entity);
                 break;
+                
         }
         if (lives <= 0 || holes_reached == NUM_HOLES) {
             if (holes_reached == NUM_HOLES){

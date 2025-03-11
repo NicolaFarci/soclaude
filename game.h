@@ -25,6 +25,11 @@
 #define HORIZONTAL_JUMP FROG_WIDTH
 #define VERTICAL_JUMP   FROG_HEIGHT
 
+//Dimensioni Corsie e Coccodrilli
+#define NUM_RIVER_LANES 8
+#define CROCODILE_WIDTH 6
+#define CROCODILE_HEIGHT 2
+
 // Parametri di gioco
 #define NUM_LIVES 3
 #define INITIAL_SCORE 0
@@ -41,6 +46,7 @@ typedef enum {
     ENTITY_FROG,
     ENTITY_GRENADE,
     ENTITY_CROCODILE,
+    ENTITY_CROCODILEPROJ,
     // Altre entità possono essere aggiunte in futuro
 } EntityType;
 
@@ -56,13 +62,21 @@ typedef struct {
     char sprite[SPRITE_ROWS][SPRITE_COLS];
 } Entity;
 
+typedef struct{
+    int y;
+    int direction;
+    int speed;
+    bool can_spawn;
+}RiverLane;
+
 //Tipi di messaggi
 typedef enum {
     MSG_FROG_UPDATE,
     MSG_TIMER_TICK,
     MSG_GRENADE_LEFT,
     MSG_GRENADE_RIGHT,
-    MSG_CROCODILE,
+    MSG_CROC_UPDATE,
+    MSG_CROC_PROJECTILE,
 } MessageType;
 
 //Struttura del messaggio inviato

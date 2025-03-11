@@ -38,24 +38,25 @@ void start_game() {
     // Inizializzo il buffer circolare
     CircularBuffer buffer;
     buffer_init(&buffer);
-    
-    init_streams();
 
-    // Crea i thread generatori per ogni flusso
-    for (int i = 0; i < NUM_STREAMS; i++) {
-        StreamGeneratorArgs *args = malloc(sizeof(StreamGeneratorArgs));
-        args->buffer = &buffer;
-        args->stream_id = i;
-    
-        pthread_create(&streams[i].generator_tid, NULL, stream_generator_thread, args);
-    }
     // Argomenti per i thread
     ConsumerArgs consumer_args = {&buffer, game_win, info_win};
     FrogArgs frog_args = {&buffer, game_win};
     TimerArgs timer_args = {&buffer};
+    CrocodileArgs crocodile_args = {&buffer,game_win};
 
     pthread_t frog_tid, consumer_tid,timer_tid;
 
+    
+    RiverLane lanes[NUM_RIVER_LANES];
+    init_lanes(lanes);
+
+    pthread_t crocodile_tid[NUM_RIVER_LANES];
+    for (int i = 0; i < NUM_RIVER_LANES; i++)
+    {
+        pthread_create(&crocodile_tid[i], NULL, crocodile_thread, &crocodile_args);
+        pthread_detach(crocodile_tid[i]);
+    }
     // Creazione dei thread
     pthread_create(&frog_tid, NULL, frog_thread, &frog_args);
     pthread_create(&timer_tid, NULL, timer_thread, &timer_args);
@@ -65,8 +66,8 @@ void start_game() {
     pthread_join(consumer_tid, NULL);
     pthread_join(frog_tid, NULL);
     pthread_join(timer_tid, NULL);
+    
 
-    kill_stream_threads();
     buffer_destroy(&buffer);    
 
     // Pulizia della finestra di gioco
