@@ -29,10 +29,14 @@ void *consumer_thread(void *arg) {
     RiverLane lanes[NUM_RIVER_LANES];
     init_lanes(lanes);
     
-    Entity crocodiles[NUM_RIVER_LANES];
-    for (int i = 0; i < NUM_RIVER_LANES; i++)
-    {
-        crocodile_init(&crocodiles[i],&lanes[i]);
+    Entity crocodiles[NUM_RIVER_LANES][NUM_CROC];
+
+    // Inizializza tutti i coccodrilli (all'inizio)
+    for (int i = 0; i < NUM_RIVER_LANES; i++) {
+        for (int j = 0; j < NUM_CROC; j++) {
+            crocodile_init(&crocodiles[i][j], &lanes[i], j);
+            crocodiles[i][j].spawned=false;
+        }
     }
     
     Message msg;
@@ -41,6 +45,9 @@ void *consumer_thread(void *arg) {
     int time = ROUND_TIME;
     int hole_index = -1;
     int holes_reached = 0;
+
+    int lane_idx;
+    int croc_idx;
 
     while (lives > 0) {
         pthread_mutex_lock(&game_state_mutex);
@@ -98,13 +105,12 @@ void *consumer_thread(void *arg) {
                 draw_grenade(game_win,&grenade_right);
                 break;
             case MSG_CROC_UPDATE:
-                for (int i = 0; i < NUM_RIVER_LANES; i++){
-                    if(msg.entity.y==lanes[i].y){
-                        clear_crocodile(game_win, &crocodiles[i]);
-                        crocodiles[i]= msg.entity;
-                        draw_crocodile(game_win, &crocodiles[i]);
-                        break;
-                    }
+                lane_idx = msg.id.lane;
+                croc_idx = msg.id.croc_index;
+                if (lane_idx >= 0 && lane_idx < NUM_RIVER_LANES && croc_idx >= 0 && croc_idx < NUM_CROC) {
+                    clear_crocodile(game_win, &crocodiles[lane_idx][croc_idx]);
+                    crocodiles[lane_idx][croc_idx] = msg.entity;
+                    draw_crocodile(game_win, &crocodiles[lane_idx][croc_idx]);
                 }
                 break;
                 

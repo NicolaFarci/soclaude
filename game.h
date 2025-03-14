@@ -17,7 +17,7 @@
 #define NUM_OPTIONS 3
 
 //Dimensioni del buffer condiviso
-#define BUFFER_SIZE 32
+#define BUFFER_SIZE 64
 
 //Dimensioni e salti della rana
 #define FROG_WIDTH 3
@@ -26,7 +26,8 @@
 #define VERTICAL_JUMP   FROG_HEIGHT
 
 //Dimensioni Corsie e Coccodrilli
-#define NUM_RIVER_LANES 8
+#define NUM_RIVER_LANES 13
+#define NUM_CROC 6
 #define CROCODILE_WIDTH 6
 #define CROCODILE_HEIGHT 2
 
@@ -60,6 +61,7 @@ typedef struct {
     int dx; // direzione
     int speed;
     char sprite[SPRITE_ROWS][SPRITE_COLS];
+    bool spawned;
 } Entity;
 
 typedef struct{
@@ -79,12 +81,19 @@ typedef enum {
     MSG_CROC_PROJECTILE,
 } MessageType;
 
+typedef struct{
+    int lane;
+    int croc_index;
+}Croc_id;
+
 //Struttura del messaggio inviato
 typedef struct {
     MessageType type;
-    int id; // 0 per la rana
+    Croc_id id; // 0 per la rana
     Entity entity;
 } Message;
+
+
 
 // Struttura del buffer circolare
 typedef struct {
